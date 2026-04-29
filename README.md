@@ -19,7 +19,8 @@
       - _Example:_ deployments, configMaps, ...
 
 ## Documentation
-You can our full set of documentation at https://argocd-vault-plugin.readthedocs.io/
+
+- [here](docs)
 
 
 ## Blogs
