@@ -1,9 +1,10 @@
-There are 3 different ways that parameters can be passed along to argocd-vault-plugin.
+- ways to pass parameters -- to -- argocd-vault-plugin
 
 ##### Kubernetes Secret
 
-You can define a Secret with the Vault configuration. The keys of the secret's `data`/`stringData`
-should be the exact names given below, case-sensitive:
+- steps 
+  - create secret / SAME `data` & `stringData`
+(case-sensitive)
 
 ```yaml
 apiVersion: v1
@@ -19,15 +20,23 @@ metadata:
 type: Opaque
 ```
 
-You can use it like this: `argocd-vault-plugin generate /some/path -s vault-configuration`.
+  - `argocd-vault-plugin generate /some/path -s vault-configuration`
 
-By default, the secret is assumed to be in the `argocd` namespace. However, the namespace containing the secret can be provided by using the format `<namespace>:<name>`
+- requirements
+  - `argocd-repo-server` has a service account token / mounted | standard location
 
-<b>Note</b>: this requires the `argocd-repo-server` to have a service account token mounted in the standard location.
+###### Environment Variable Prefix
 
-###### ArgoCD 2.4.0 Environment Variable Prefix
+- requirements
+  - ArgoCD 2.4.0+
 
-Starting with ArgoCD 2.4.0, environment variables passed into the `init` and `generate` steps are prefixed with `ARGOCD_ENV` to prevent users from setting potentially-sensitive environment variables. All environment variables defined here will be prepended with the new prefix, e.g. `ARGOCD_ENV_AVP_TYPE`. The configuration will honor both prefixed and non-prefixed environment variables, preferring the prefixed variable if both are presented. There are no changes needed to the secret.
+- environment variables / passed | `init` & `generate` steps
+  - are prefixed -- with -- `ARGOCD_ENV`
+    - Reason: 🧠 prevent users -- from -- setting potentially-sensitive environment variables🧠
+ 
+TODO:
+All environment variables defined here will be prepended with the new prefix, e.g. `ARGOCD_ENV_AVP_TYPE`
+The configuration will honor both prefixed and non-prefixed environment variables, preferring the prefixed variable if both are presented. There are no changes needed to the secret.
 
 ```yaml
 apiVersion: v1
@@ -41,7 +50,8 @@ metadata:
 type: Opaque
 ```
 
-See the [ArgoCD Upgrade Guide](https://argo-cd.readthedocs.io/en/latest/operator-manual/upgrading/2.3-2.4/#update-plugins-to-use-newly-prefixed-environment-variables) for more information.
+- [how to upgrade ArgoCD](https://argo-cd.readthedocs.io/en/latest/operator-manual/upgrading/2.3-2.4/#update-plugins-to-use-newly-prefixed-environment-variables)
+
 ##### Configuration File
 
 The configuration can be given in a file reachable from the plugin, in any Viper supported format (YAML, JSON, etc.). The keys must match the same names used in the the Kubernetes secret:
