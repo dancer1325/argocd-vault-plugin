@@ -7,16 +7,20 @@
 
 <img src="https://github.com/argoproj-labs/argocd-vault-plugin/raw/main/assets/argo_vault_logo.png" width="300">
 
-An Argo CD plugin to retrieve secrets from various Secret Management tools (HashiCorp Vault, IBM Cloud Secrets Manager, AWS Secrets Manager, etc.) and inject them into Kubernetes resources
+- == Argo CD plugin
+  - allows
+    - retrieve secrets -- from -- >=1 Secret Management tools (HashiCorp Vault, IBM Cloud Secrets Manager, AWS Secrets Manager, etc.) a
+    - inject the secrets | Kubernetes resources
 
-### Why use this plugin?
-This plugin is aimed at helping to solve the issue of secret management with GitOps and Argo CD. We wanted to find a simple way to utilize Secret Management tools without having to rely on an operator or custom resource definition. This plugin can be used not just for secrets but also for deployments, configMaps or any other Kubernetes resource.
+- goal 
+  - secret management | GitOps & Argo CD
+    - WITHOUT relying | operator OR custom resource definition
+    - ALTHOUGHT, it can be used | other Kubernetes resource
+      - _Example:_ deployments, configMaps, ...
 
 ## Documentation
 You can our full set of documentation at https://argocd-vault-plugin.readthedocs.io/
 
-## Contributing
-Interested in contributing? Please read our contributing documentation [here](./CONTRIBUTING.md) to get started!
 
 ## Blogs
 - [Solving ArgoCD Secret Management with the argocd-vault-plugin](https://itnext.io/argocd-secret-management-with-argocd-vault-plugin-539f104aff05)
