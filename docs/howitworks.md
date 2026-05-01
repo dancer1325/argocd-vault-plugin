@@ -2,10 +2,13 @@
 
 The argocd-vault-plugin works by taking a directory of YAML or JSON files that have been templated out using the pattern of `<placeholder>` where you would want a value from Vault to go. The inside of the `<>` would be the actual key in Vault.
 
-An annotation can be used to specify exactly where the plugin should look for the vault values
+
 
 - `avp.kubernetes.io/path: "path/to/secret"`
   - annotation's format
+  - uses
+    - specify the location | plugin should look for the vault values
+
 
 For example, if you have a secret with the key `password-vault-key` that you would want to pull from vault, you might have a yaml that looks something like the below code. In this yaml, the plugin will pull the value of the _latest version_ of the secret at `path/to/secret/password-vault-key` and inject it into the Secret.
 
