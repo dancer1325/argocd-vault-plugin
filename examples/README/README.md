@@ -2,8 +2,8 @@
 TODO:
 
 # secret management | GitOps & Argo CD
-## WITHOUT relying on | operator OR CRD
-TODO:
+## == 💡Argo CD Config Management Plugin💡
+* [manifest / define the plugin itself](/manifests/cmp-sidecar/cmp-plugin.yaml)
 ## ALTHOUGH, it can be used | other Kubernetes resource
 TODO:
 
