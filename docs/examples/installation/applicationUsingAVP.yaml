@@ -1,0 +1,19 @@
+---
+# way1: specifying the plugin
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-app
+spec:
+  ... other fields
+  plugin:
+    name: argocd-vault-plugin
+---
+# way2: -- via -- custom plugin
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-app
+spec:
+  ... other fields
+# No need to define `plugin` since Argo CD will figure it out!

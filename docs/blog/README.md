@@ -1,0 +1,3 @@
+- [Introducing argocd-vault-plugin v1.0!](Introducing%20argocd-vault-plugin%20v1.0.md)
+  - == [Solving ArgoCD Secret Management with the argocd-vault-plugin](Introducing%20argocd-vault-plugin%20v1.0.md)
+- [How to Use HashiCorp Vault and Argo CD for GitOps on OpenShift](How%20to%20Use%20HashiCorp%20Vault%20and%20Argo%20CD%20for%20GitOps%20on%20OpenShift.md)

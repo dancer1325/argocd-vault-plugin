@@ -1,29 +1,20 @@
-- ways to pass parameters -- to -- argocd-vault-plugin
+* goal
+  * ways to pass parameters -- to -- argocd-vault-plugin
 
 ##### Kubernetes Secret
 
-- steps 
-  - create secret / SAME `data` & `stringData`
-(case-sensitive)
-
-```yaml
-apiVersion: v1
-data:
-  VAULT_ADDR: Zm9v
-  AVP_AUTH_TYPE: Zm9v
-  AVP_GITHUB_TOKEN: Zm9v
-  AVP_TYPE: Zm9v
-kind: Secret
-metadata:
-  name: vault-configuration
-  namespace: argocd
-type: Opaque
-```
-
-  - `argocd-vault-plugin generate /some/path -s vault-configuration`
-
-- requirements
+- ⚠️requirements⚠️
   - `argocd-repo-server` has a service account token / mounted | standard location
+
+- steps 
+  - create secret / you can specify it | `data` OR `stringData`
+    - take care
+      - 's keys are case-sensitive
+      - values | `data`,
+        - base64
+      - values | `stringData`
+        - raw text
+  - `argocd-vault-plugin generate /some/path -s vault-configuration`
 
 ###### Environment Variable Prefix
 
