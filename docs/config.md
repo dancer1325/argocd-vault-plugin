@@ -1,7 +1,15 @@
 * goal
   * ways to pass parameters -- to -- argocd-vault-plugin
+    * [-- as -- Kubernetes Secret](#---as----kubernetes-secret)
+    * [-- as -- configuration file](#---as----configuration-file)
+    * [-- as -- environment variable](#---as----environment-variable)
+  * supported
+    * parameters
+    * annotation
+  * multitenancy
 
-##### Kubernetes Secret
+## ways to pass parameters -- to -- argocd-vault-plugin
+### -- as -- Kubernetes Secret
 
 - ⚠️requirements⚠️
   - `argocd-repo-server` has a service account token / mounted | standard location
@@ -16,7 +24,7 @@
         - raw text
   - `argocd-vault-plugin generate /some/path -s vault-configuration`
 
-###### Environment Variable Prefix
+#### Environment Variable Prefix
 
 - requirements
   - ArgoCD 2.4.0+
@@ -43,7 +51,7 @@ type: Opaque
 
 - [how to upgrade ArgoCD](https://argo-cd.readthedocs.io/en/latest/operator-manual/upgrading/2.3-2.4/#update-plugins-to-use-newly-prefixed-environment-variables)
 
-##### Configuration File
+### -- as -- configuration file
 
 The configuration can be given in a file reachable from the plugin, in any Viper supported format (YAML, JSON, etc.). The keys must match the same names used in the the Kubernetes secret:
 
@@ -56,7 +64,7 @@ AVP_TYPE: vault
 
 You can use it like this: `argocd-vault-plugin generate /some/path -c /path/to/config/file.yaml`. This can be useful for use-cases not involving Argo CD.
 
-##### Environment Variables
+### -- as -- environment variable
 
 The configuration can be set via environment variables, where each key is prefixed by `AVP_`:
 
@@ -67,7 +75,7 @@ AVP_TYPE=vault # corresponds to TYPE key
 Make sure that these environment variables are available to the plugin when running it, whether that is in Argo CD or as a CLI tool. Note that any _set_
 environment variables take precedence over configuration pulled from a Kubernetes Secret or a file.
 
-### Full List of Supported Parameters
+## Supported Parameters
 We support all the backend specific environment variables each backend's SDK will accept (e.g, `VAULT_NAMESPACE`, `AWS_REGION`, etc). Refer to the [specific backend's documentation](../backends) for details.
 
 We also support these AVP specific variables:
@@ -92,7 +100,7 @@ We also support these AVP specific variables:
 | AVP_YCL_PRIVATE_KEY        | Yandex Cloud Lockbox service account private key    | Required with `TYPE` of `yandexcloudlockbox`                                                                                                                                 |
 | AVP_PATH_VALIDATION        | Regular Expression to validate the Vault path       | Optional. Can be used for e.g. to prevent path traversals.                                                                                                                   |
 
-### Full List of Supported Annotation
+## Supported Annotation
 
 We support several different annotations that can be used inside a kubernetes resource. These annotations will override any corresponding configuration set via Environment Variable or Configuration File.
 
@@ -104,13 +112,13 @@ We support several different annotations that can be used inside a kubernetes re
 | avp.kubernetes.io/secret-version | Version of the secret to retrieve. Only effective on generic `<placeholder>`s so `avp.kubernetes.io/path` is required when this annotation is used |
 | avp.kubernetes.io/remove-missing | Plugin will not throw error when a key is missing from Vault Secret. Only works on `Secret` or `ConfigMap` resources                               |
 
-### Multitenancy
+## Multitenancy
 
 A common use-case is to be able to use _multiple_ secret backends for generating secrets within different Argo CD applications, such as when a team hosts a multi-tenant Argo CD instance.
 
 For this to work, AVP must be configured to use specific credentials for generating the manifests of an app. This can be done in one of 2 ways:
 
-#### Using Kubernetes secrets for supplying AVP configuration
+### Using Kubernetes secrets for supplying AVP configuration
 
 This method requires having one Kubernetes secret with AVP configuration for each backend. For example, if there are 2 teams `foo` and `bar` using different instances of AWS Secret Manager, there should be at least 2 Kubernetes secrets containing AVP configuration: `foo-team-aws-sm-credentials` and `bar-team-aws-sm-credentials`.
 
@@ -195,7 +203,7 @@ spec:
       name: foo-aws-avp
 ```
 
-#### Passing AVP configuration as environment variables in the app manifest
+### Passing AVP configuration as environment variables in the app manifest
 
 This method simply requires passing the appropriate AVP configuration environment variables in the Argo CD app manifest. This is best used when non-sensitive data, like the Vault namespace, is the only thing that varies between tenants (and therefore, Vault configuration variables like `AVP_ROLE_ID` and `AVP_SECRET_ID` can be specified once via environment variables in the `argocd-repo-server` pod, Kubernetes secrets, etc and not put directly in the app manifest).
 
