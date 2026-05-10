@@ -4,6 +4,13 @@ kind: Kustomization
 resources:
 - https://github.com/argoproj/argo-cd/manifests/cluster-install?ref=v2.7.9
 
-patchesStrategicMerge:
-- argocd-repo-server-deploy.yaml
-- argocd-cm.yaml
+# 'patchesStrategicMerge'
+#   | Kustomize v5,
+#     deprecated
+# 'patches'
+#   allow
+#     avoid warnings
+#     ensure forward compatibility
+patches:
+- path: argocd-repo-server-deploy.yaml
+- path: argocd-cm.yaml

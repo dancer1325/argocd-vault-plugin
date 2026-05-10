@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-repo-server
+spec:
+  selector:
+    # TODO:
+  template:
+    spec:
+      containers:
+        - name: argocd-repo-server
+          # <BUILT_AND_PUSH_CUSTOM_IMAGE>
+          image: #TODO:
+
+          # Note: AVP config (for the secret manager, etc) can be passed in several ways. This is just one example
+          # https://argocd-vault-plugin.readthedocs.io/en/stable/config/
+          envFrom:
+            - secretRef:
+                name: argocd-vault-plugin-credentials
+
+      # Not strictly necessary, but required for passing AVP configuration from a secret and for using Kubernetes auth to Hashicorp Vault
+      automountServiceAccountToken: true

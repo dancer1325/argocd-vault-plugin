@@ -9,5 +9,12 @@ resources:
 - https://github.com/argoproj/argo-cd//manifests/cluster-install?ref=v2.7.9
 - cmp-plugin.yaml
 
-patchesStrategicMerge:
-- argocd-repo-server.yaml
+# 'patchesStrategicMerge'
+#   | Kustomize v5,
+#     deprecated
+# 'patches'
+#   allow
+#     avoid warnings
+#     ensure forward compatibility
+patches:
+- path: argocd-repo-server.yaml

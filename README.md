@@ -3,15 +3,13 @@
 * goal
   * secret management | GitOps & Argo CD
     * == 💡[Argo CD Config Management Plugin](https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/)💡
-      * -> 🧠NOT rely on | operator OR CRD❌
-    * ALTHOUGH, it can be used | other Kubernetes resource
-      * _Example:_ deployments, configMaps, ...
+      * -> ❌NOT rely on | operator OR CRD❌
 
 * == Argo CD plugin
   * allows
     * retrieve secrets -- from -- >=1 Secret Management tools
       * _Example of Secret Management tools:_ HashiCorp Vault, IBM Cloud Secrets Manager, AWS Secrets Manager
-    * inject the secrets | Kubernetes resources
+    * inject the secrets | Kubernetes resources (deployments, configMaps, ...)
 
 ## Documentation
 

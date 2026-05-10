@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-repo-server
+spec:
+  template:
+    spec:
+      automountServiceAccountToken: true
+      volumes:
+        - configMap:
+            name: cmp-plugin
+          name: cmp-plugin
+      containers:
+        - name: avp
+          command: [/var/run/argocd/argocd-cmp-server]
+          image: your-container-registry/your-custom-image
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /tmp
+              name: tmp
+
+            # Register plugins into sidecar
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: avp.yaml
+              name: cmp-plugin

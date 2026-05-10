@@ -117,6 +117,22 @@ AVP_USERNAME: Your Username
 AVP_PASSWORD: Your Password
 ```
 
+##### ALTERNATIVES
+
+|                                      | AVP                                                  | Vault Agent Injector                                      | Vault Secrets Operator                                                 |
+|--------------------------------------|------------------------------------------------------|-----------------------------------------------------------|------------------------------------------------------------------------|
+| **Mechanism**                        | \| render the manifest, replace placeholders         | injects a sidecar / pod / writes secrets \| shared volume | Kubernetes operator / syncs Vault secrets \| native K8s Secrets        |
+| **When secrets are resolved**        | \| generate the manifests                            | \| pod startup (runtime)                                  | CONTINUOUSLY (reconcile loop)                                          |
+| **Output**                           | YAML / contain secret values                         | files \| "/vault/secrets/"                                | `kind: Secret` \| cluster                                              |
+| **Requires Argo CD**                 | Yes                                                  | No                                                        | No                                                                     |
+| **Modifies application pods**        | No <br/> &nbsp;&nbsp; "argocd-repo-server"'s sidecar | Yes (adds sidecar)                                        | No                                                                     |
+| **Uses CRDs**                        | No                                                   | No                                                        | Yes (`VaultStaticSecret`, etc.)                                        |
+| **Pure GitOps**                      | Yes                                                  | No (hidden runtime state)                                 | Partial <br/> &nbsp;&nbsp; CRD \| Git <br/> &nbsp;&nbsp; Secret is NOT |
+| **Secret rotation WITHOUT redeploy** | No                                                   | Yes (vault-agent renews)                                  | Yes (operator re-syncs)                                                |
+
+* [Vault agent injector](https://developer.hashicorp.com/vault/docs/deploy/kubernetes/injector)
+* [Vault secrets operator](https://github.com/hashicorp/vault-secrets-operator)
+
 ##### Examples
 
 ###### Path Annotation

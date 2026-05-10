@@ -6,12 +6,15 @@ spec:
   template:
     spec:
 
-      # Mount SA token for Kubernets auth
-      # Note: In 2.4.0 onward, there is a dedicated SA for repo-server (not default)
-      # Note: This is not fully supported for Kubernetes < v1.19
+      # mount SA token -- for -- Kubernets auth
+      #   | Argo CD v2.4.0+,
+      #     exist repo-server's DEDICATED SA
+      #   | Kubernetes < v1.19,
+      #     NOT FULLY supported
       automountServiceAccountToken: true
 
-      # Each of the embedded YAMLs inside cmp-plugin ConfigMap will be mounted into it's respective plugin sidecar
+      # EACH embedded YAMLs | "cmp-plugin" ConfigMap,
+      #   will be mounted | it's respective plugin sidecar
       volumes:
         - configMap:
             name: cmp-plugin
@@ -22,14 +25,22 @@ spec:
       # Download tools
       initContainers:
       - name: download-tools
+        # image
+        #   use ANYTHING / contains the needed binaries
         image: registry.access.redhat.com/ubi8
         env:
           - name: AVP_VERSION
             value: 1.18.0
         command: [sh, -c]
         args:
+          # 1. | amd64 nodes
+          # - >-
+          #   curl -L https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v$(AVP_VERSION)/argocd-vault-plugin_$(AVP_VERSION)_linux_amd64 -o argocd-vault-plugin &&
+          #   chmod +x argocd-vault-plugin &&
+          #   mv argocd-vault-plugin /custom-tools/
+          # 2. | arm64 nodes
           - >-
-            curl -L https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v$(AVP_VERSION)/argocd-vault-plugin_$(AVP_VERSION)_linux_amd64 -o argocd-vault-plugin &&
+            curl -L https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v$(AVP_VERSION)/argocd-vault-plugin_$(AVP_VERSION)_linux_arm64 -o argocd-vault-plugin &&
             chmod +x argocd-vault-plugin &&
             mv argocd-vault-plugin /custom-tools/
 
@@ -37,8 +48,10 @@ spec:
           - mountPath: /custom-tools
             name: custom-tools
 
-      # argocd-vault-plugin with Helm
+
       containers:
+      # 3 flavors
+      # 1. argocd-vault-plugin with Helm
       - name: avp-helm
         command: [/var/run/argocd/argocd-cmp-server]
         image: quay.io/argoproj/argocd:v2.7.9
@@ -53,17 +66,17 @@ spec:
           - mountPath: /tmp
             name: tmp
 
-          # Register plugins into sidecar
+          # register plugins | sidecar
           - mountPath: /home/argocd/cmp-server/config/plugin.yaml
             subPath: avp-helm.yaml
             name: cmp-plugin
 
-          # Important: Mount tools into $PATH
+          # mount tools | $PATH
           - name: custom-tools
             subPath: argocd-vault-plugin
             mountPath: /usr/local/bin/argocd-vault-plugin
 
-      # argocd-vault-plugin with Kustomize
+      # 2. argocd-vault-plugin with Kustomize
       - name: avp-kustomize
         command: [/var/run/argocd/argocd-cmp-server]
         image: quay.io/argoproj/argocd:v2.7.9
@@ -78,17 +91,17 @@ spec:
           - mountPath: /tmp
             name: tmp
 
-          # Register plugins into sidecar
+          # register plugins | sidecar
           - mountPath: /home/argocd/cmp-server/config/plugin.yaml
             subPath: avp-kustomize.yaml
             name: cmp-plugin
 
-          # Important: Mount tools into $PATH
+          # mount tools | $PATH
           - name: custom-tools
             subPath: argocd-vault-plugin
             mountPath: /usr/local/bin/argocd-vault-plugin
 
-      # argocd-vault-plugin with plain YAML
+      # 3. argocd-vault-plugin with plain YAML
       - name: avp
         command: [/var/run/argocd/argocd-cmp-server]
         image: quay.io/argoproj/argocd:v2.7.9
@@ -103,12 +116,12 @@ spec:
           - mountPath: /tmp
             name: tmp
 
-          # Register plugins into sidecar
+          # register plugins | sidecar
           - mountPath: /home/argocd/cmp-server/config/plugin.yaml
             subPath: avp.yaml
             name: cmp-plugin
 
-          # Important: Mount tools into $PATH
+          # mount tools | $PATH
           - name: custom-tools
             subPath: argocd-vault-plugin
             mountPath: /usr/local/bin/argocd-vault-plugin

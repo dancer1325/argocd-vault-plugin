@@ -1,7 +1,13 @@
 ### Summary
 
-The argocd-vault-plugin works by taking a directory of YAML or JSON files that have been templated out using the pattern of `<placeholder>` where you would want a value from Vault to go. The inside of the `<>` would be the actual key in Vault.
+The argocd-vault-plugin works by taking a directory of YAML or JSON files that have been templated out using the pattern of `<placeholder>` where you would want a value from Vault to go
+* The inside of the `<>` would be the actual key in Vault.
 
+You can use ArgoCD Vault Plugin along with other Kubernetes configuration tools
+(Helm, Kustomize, etc)
+* The general method is to have your configuration tool output YAMLs that are
+  ready to apply to a cluster except for containing `<placeholder>`s,
+  and then run the plugin on this output to fill in the secrets
 
 
 - `avp.kubernetes.io/path: "path/to/secret"`
@@ -10,7 +16,8 @@ The argocd-vault-plugin works by taking a directory of YAML or JSON files that h
     - specify the location | plugin should look for the vault values
 
 
-For example, if you have a secret with the key `password-vault-key` that you would want to pull from vault, you might have a yaml that looks something like the below code. In this yaml, the plugin will pull the value of the _latest version_ of the secret at `path/to/secret/password-vault-key` and inject it into the Secret.
+For example, if you have a secret with the key `password-vault-key` that you would want to pull from vault, you might have a yaml that looks something like the below code
+* In this yaml, the plugin will pull the value of the _latest version_ of the secret at `path/to/secret/password-vault-key` and inject it into the Secret.
 
 As YAML:
 ```yaml
@@ -43,7 +50,8 @@ As JSON:
 }
 ```
 
-And then once the plugin is done doing the substitutions, it outputs the manifest as YAML to standard out to then be applied by Argo CD. The resulting YAML would look like:
+And then once the plugin is done doing the substitutions, it outputs the manifest as YAML to standard out to then be applied by Argo CD
+* The resulting YAML would look like:
 ```yaml
 kind: Secret
 apiVersion: v1
@@ -57,7 +65,8 @@ data:
 ```
 
 ### Replacement behavior
-By default the plugin does not perform any transformation of the secrets in transit. So if you have plain text secrets in Vault, you will need to use the `stringData` field and if you have a base64 encoded secret in Vault, you will need to use the `data` field according to the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/secret/).
+By default the plugin does not perform any transformation of the secrets in transit
+* So if you have plain text secrets in Vault, you will need to use the `stringData` field and if you have a base64 encoded secret in Vault, you will need to use the `data` field according to the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/secret/).
 
 There are 2 exceptions to this:
 
@@ -68,7 +77,8 @@ There are 2 exceptions to this:
 ### Types of placeholders
 
 #### Generic placeholders
-The example in the Summary uses a _generic_ placeholder, which is just the name of the _key_ of the secret in the secrets manager you want to inject. All placeholders have to be keys in the _same_ secret in the secrets manager.
+The example in the Summary uses a _generic_ placeholder, which is just the name of the _key_ of the secret in the secrets manager you want to inject
+* All placeholders have to be keys in the _same_ secret in the secrets manager.
 
 Valid examples:
 
@@ -98,7 +108,8 @@ metadata:
 **Note**: This ignored for secret managers that don't allow versioning, meaning the latest version is returned
 
 #### Inline-path placeholders
-An inline-path placeholder allows you to specify the path, key, and optionally, the version to use for a specific placeholder. This means you can inject values from _multiple distinct_ secrets in your secrets manager into the same YAML. 
+An inline-path placeholder allows you to specify the path, key, and optionally, the version to use for a specific placeholder
+* This means you can inject values from _multiple distinct_ secrets in your secrets manager into the same YAML. 
 
 Valid examples:
 
@@ -108,17 +119,20 @@ Valid examples:
 If the `version` is omitted (first example), the latest version of the secret is retrieved. 
 
 ##### Specifying the path of a secret
-The only way to specify the path is in the placeholder itself: the string `path:` followed by the path in your secret manager to the secret. The `avp.kubernetes.io/path` annotation has _no effect_ on these placeholders.
+The only way to specify the path is in the placeholder itself: the string `path:` followed by the path in your secret manager to the secret
+* The `avp.kubernetes.io/path` annotation has _no effect_ on these placeholders.
 
 ##### Specifying the version of a secret
-The only way to specify the version is in the placeholder itself: the string following the last `#` in the placeholder should be the ID of the version of the secret in your secret manager. The `avp.kubernetes.io/secret-version` annotation has _no effect_ on these placeholders.
+The only way to specify the version is in the placeholder itself: the string following the last `#` in the placeholder should be the ID of the version of the secret in your secret manager
+* The `avp.kubernetes.io/secret-version` annotation has _no effect_ on these placeholders.
 
 **Note**: This ignored for secret managers that don't allow versioning, meaning the latest version is returned
 
 #### Special behavior
 
 ##### Base64 placeholders
-Some tools like Kustomize secret generator will create Secrets with `data` fields containing base64 encoded strings from the source files. If you try to use `<placeholder>`s in the source files, they will be output in a base64 format. 
+Some tools like Kustomize secret generator will create Secrets with `data` fields containing base64 encoded strings from the source files
+* If you try to use `<placeholder>`s in the source files, they will be output in a base64 format. 
 
 The plugin can handle this case by finding any base64 encoded placeholders (either generic or inline-path), replace them, and re-base64 encode the result. 
 
@@ -219,7 +233,8 @@ fieldRef:
 ##### Removing keys with missing values
 By default, AVP will return an error if there is a `<placeholder>` that has no matching key in the secrets manager. 
 
-You can override this by using the annotation `avp.kubernetes.io/remove-missing`. This will remove keys whose values are missing from Vault from the entire YAML. 
+You can override this by using the annotation `avp.kubernetes.io/remove-missing`
+* This will remove keys whose values are missing from Vault from the entire YAML. 
 
 For example, given this input:
 ```yaml
@@ -255,7 +270,8 @@ This only works with _generic_ placeholders.
 #### Modifiers
 
 ##### `base64encode`
-<!-- By default the plugin does not perform any transformation of the secrets in transit. So if you have plain text secrets in Vault, you will need to use the `stringData` field and if you have a base64 encoded secret in Vault, you will need to use the `data` field according to the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/secret/). -->
+<!-- By default the plugin does not perform any transformation of the secrets in transit
+* So if you have plain text secrets in Vault, you will need to use the `stringData` field and if you have a base64 encoded secret in Vault, you will need to use the `data` field according to the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/secret/). -->
 
 The base64encode modifier allows you to base64 encode a plain-text value retrieved from a secrets manager before injecting it into a Kubernetes secret.
 
@@ -283,7 +299,9 @@ Valid examples:
 
 ##### `jsonPath`
 
-The jsonPath modifier allows you use jsonpath to post-process objects or json, retrieved from a secrets manager, before injecting into a Kubernetes manifest.  The output is a string.  If your desired datatype is not a string, pass the output through jsonParse.
+The jsonPath modifier allows you use jsonpath to post-process objects or json, retrieved from a secrets manager, before injecting into a Kubernetes manifest
+*  The output is a string
+*  If your desired datatype is not a string, pass the output through jsonParse.
 
 See the Kubernetes jsonPath documentation for more detail: [https://kubernetes.io/docs/reference/kubectl/jsonpath/](https://kubernetes.io/docs/reference/kubectl/jsonpath/)
 
@@ -331,7 +349,8 @@ Valid examples:
 
 ##### `sha256sum`
 
-The sha256sum modifier computes the SHA256 checksum of the string. Can be used to detect changes in a secret.
+The sha256sum modifier computes the SHA256 checksum of the string
+* Can be used to detect changes in a secret.
 
 Valid examples:
 
@@ -350,7 +369,8 @@ spec:
 
 By default argocd-vault-plugin will read valid kubernetes YAMLs and replace variables with values from Vault.
 If a previous command failed and outputs nothing to stdout and AVP reads the input from stdin with
-the `-` argument, AVP will forward an empty YAML output downstream. To catch and prevent accientental errors
+the `-` argument, AVP will forward an empty YAML output downstream
+* To catch and prevent accientental errors
 in chained commands, please use the `-o pipefail` bash option like so:
 
 ```bash

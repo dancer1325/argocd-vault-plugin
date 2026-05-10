@@ -4,15 +4,22 @@ metadata:
   annotations:
     avp.kubernetes.io/path: secret/testing
     avp.kubernetes.io/kv-version: "1"
+  # <name>
+  #   placeholder / injected -- by -- ArgoCD Vault Plugin
   name: <name>
+  # <namespace>
   namespace: <namespace>
   labels:
+    # <name>
     app: <name>
+    # <version>
     version: <version>
 spec:
   selector:
     matchLabels:
+      # <name>
       app: <name>
+  # <replicas>
   replicas: <replicas>
   strategy:
     type: RollingUpdate
@@ -23,11 +30,15 @@ spec:
   revisionHistoryLimit: 10
   template:
     metadata:
+      # <name>
       name: <name>
       labels:
+        # <name>
         app: <name>
     spec:
       containers:
+      # <name>
       - name: <name>
+        # <name> & <tag>
         image: foo.com/<name>:<tag>
         imagePullPolicy: Always
