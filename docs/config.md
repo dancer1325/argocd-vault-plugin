@@ -1,15 +1,16 @@
 * goal
-  * ways to pass parameters -- to -- argocd-vault-plugin
-    * [-- as -- Kubernetes Secret](#---as----kubernetes-secret)
-    * [-- as -- configuration file](#---as----configuration-file)
-    * [-- as -- environment variable](#---as----environment-variable)
-  * supported
-    * parameters
-    * annotation
+  * configure argocd-vault-plugin
+    * ways
+      * [-- via -- Kubernetes Secret](#---via----kubernetes-secret)
+      * [-- via -- configuration file](#---via----configuration-file)
+      * [-- via -- environment variable](#---via----environment-variable)
+    * supported
+      * parameters
+      * annotation
   * multitenancy
 
-## ways to pass parameters -- to -- argocd-vault-plugin
-### -- as -- Kubernetes Secret
+## configure argocd-vault-plugin
+### -- via -- Kubernetes Secret
 
 * ⚠️requirements⚠️
   * "argocd-repo-server" has a service account token / mounted | standard location
@@ -30,31 +31,16 @@
   * ArgoCD 2.4.0+
 
 * environment variables / passed | `init` & `generate` steps
-  * are prefixed -- with -- `ARGOCD_ENV`
-    * Reason: 🧠 prevent users -- from -- setting potentially-sensitive environment variables🧠
- 
-TODO:
-All environment variables defined here will be prepended with the new prefix, e.g. `ARGOCD_ENV_AVP_TYPE`
-The configuration will honor both prefixed and non-prefixed environment variables, 
-preferring the prefixed variable if both are presented
-* There are no changes needed to the secret.
-
-```yaml
-apiVersion: v1
-stringData:
-  # Will be renamed to ARGOCD_ENV_AVP_AUTH_TYPE by ArgoCD before reaching the plugin.
-  AVP_AUTH_TYPE: vault
-kind: Secret
-metadata:
-  name: vault-configuration
-  namespace: argocd
-type: Opaque
-```
+  * ArgoCD 
+    * | BEFORE reaching the plugin, prefix them -- with -- `ARGOCD_ENV`
+      * Reason: 🧠 prevent users -- from -- setting potentially-sensitive environment variables🧠
+    * accepts BOTH
 
 * [how to upgrade ArgoCD](https://argo-cd.readthedocs.io/en/latest/operator-manual/upgrading/2.3-2.4/#update-plugins-to-use-newly-prefixed-environment-variables)
 
-### -- as -- configuration file
+### -- via -- configuration file
 
+TODO: 
 The configuration can be given in a file reachable from the plugin, in any Viper supported format (YAML, JSON, etc.)
 * The keys must match the same names used in the the Kubernetes secret:
 
@@ -68,43 +54,47 @@ AVP_TYPE: vault
 You can use it like this: `argocd-vault-plugin generate /some/path -c /path/to/config/file.yaml`
 * This can be useful for use-cases not involving Argo CD.
 
-### -- as -- environment variable
+### -- via -- environment variable
 
-The configuration can be set via environment variables, where each key is prefixed by `AVP_`:
+* EACH key
+  * is prefixed -- by -- `AVP_`
 
 ```shell
 AVP_TYPE=vault # corresponds to TYPE key
 ```
 
-Make sure that these environment variables are available to the plugin when running it, whether that is in Argo CD or as a CLI tool
+Make sure that these environment variables are available to the plugin when running it, 
+whether that is in Argo CD or as a CLI tool
 * Note that any _set_
 environment variables take precedence over configuration pulled from a Kubernetes Secret or a file.
 
 ## Supported Parameters
-We support all the backend specific environment variables each backend's SDK will accept (e.g, `VAULT_NAMESPACE`, `AWS_REGION`, etc)
-* Refer to the [specific backend's documentation](../backends) for details.
 
-We also support these AVP specific variables:
+* types
+  * built-in AVP 
+    * NEXT table
+  * [backend-specific](backends.md)
 
-| Name                       | Description                                         | Notes                                                                                                                                                                        |
-| -------------------------- |-----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| AVP_TYPE                   | The type of Vault backend                           | Supported values: `vault`, `ibmsecretsmanager`, `awssecretsmanager`, `gcpsecretmanager`, `yandexcloudlockbox` and `1passwordconnect`                                         |
-| AVP_KV_VERSION             | The vault secret engine                             | Supported values: `1` and `2` (defaults to 2). KV_VERSION will be ignored if the `avp.kubernetes.io/kv-version` annotation is present in a YAML resource.                    |
-| AVP_AUTH_TYPE              | The type of authentication                          | Supported values: vault: `approle, github, k8s, token`. Only honored for `AVP_TYPE` of `vault`                                                                               |
-| AVP_GITHUB_TOKEN           | Github token                                        | Required with `AUTH_TYPE` of `github`                                                                                                                                        |
-| AVP_ROLE_ID                | Vault AppRole Role_ID                               | Required with `AUTH_TYPE` of `approle`                                                                                                                                       |
-| AVP_SECRET_ID              | Vault AppRole Secret_ID                             | Required with `AUTH_TYPE` of `approle`                                                                                                                                       |
-| AVP_MOUNT_PATH             | Vault Auth Mount PATH                               | Optional. Defaults to the appropriate path based on `AUTH_TYPE` (i.e, `auth/approle` for AppRole authentication, `auth/github` for Github, `auth/kubernetes` for Kubernetes) |
-| AVP_K8S_MOUNT_PATH         | Kuberentes Auth Mount PATH                          | Optional for `AUTH_TYPE` of `k8s` defaults to `auth/kubernetes`. Takes precedence over `$AVP_MOUNT_PATH`                                                                     |
-| AVP_K8S_ROLE               | Kuberentes Auth Role                                | Required with `AUTH_TYPE` of `k8s`                                                                                                                                           |
-| AVP_K8S_TOKEN_PATH         | Path to JWT for Kubernetes Auth                     | Optional for `AUTH_TYPE` of `k8s` defaults to `/var/run/secrets/kubernetes.io/serviceaccount/token`                                                                          |
-| AVP_IBM_API_KEY            | IBM Cloud IAM API Key                               | Required with `TYPE` of `ibmsecretsmanager`                                                                                                                                  |
-| AVP_IBM_INSTANCE_URL       | Endpoint URL for IBM Cloud Secrets Manager instance | If absent, fall back to `$VAULT_ADDR`                                                                                                                                        |
-| AWS_REGION                 | AWS Secrets Manager Region                          | Only valid with `TYPE` `awssecretsmanager`                                                                                                                                   |
-| AVP_YCL_SERVICE_ACCOUNT_ID | Yandex Cloud Lockbox service account ID             | Required with `TYPE` of `yandexcloudlockbox`                                                                                                                                 |
-| AVP_YCL_KEY_ID             | Yandex Cloud Lockbox service account Key ID         | Required with `TYPE` of `yandexcloudlockbox`                                                                                                                                 |
-| AVP_YCL_PRIVATE_KEY        | Yandex Cloud Lockbox service account private key    | Required with `TYPE` of `yandexcloudlockbox`                                                                                                                                 |
-| AVP_PATH_VALIDATION        | Regular Expression to validate the Vault path       | Optional. Can be used for e.g. to prevent path traversals.                                                                                                                   |
+
+| Name                       | Description                                         | Notes                                                                                                                                                                              |
+| -------------------------- |-----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| AVP_TYPE                   | type of Vault backend                               | Supported values: `vault`, `ibmsecretsmanager`, `awssecretsmanager`, `gcpsecretmanager`, `yandexcloudlockbox` and `1passwordconnect`                                               |
+| AVP_KV_VERSION             | vault secret engine                                 | Supported values: <br/> &nbsp;&nbsp; `1` <br/> &nbsp;&nbsp; `2` (default one) <br/> `avp.kubernetes.io/kv-version` annotation \| YAML's priority > `AVP_KV_VERSION`'s priority     |
+| AVP_AUTH_TYPE              | type of authentication                              | Supported values: `approle, github, k8s, token` <br/> requirements <br/> &nbsp;&nbsp; `AVP_TYPE: vault`                                                                            |
+| AVP_GITHUB_TOKEN           | Github token                                        | if you use `AUTH_TYPE: github` -> MANDATORY                                                                                                                                        |
+| AVP_ROLE_ID                | Vault AppRole Role_ID                               | if you use `AUTH_TYPE:approle` -> MANDATORY                                                                                                                                        |
+| AVP_SECRET_ID              | Vault AppRole Secret_ID                             | if you use `AUTH_TYPE: approle` -> MANDATORY                                                                                                                                       |
+| AVP_MOUNT_PATH             | Vault Auth Mount PATH                               | TODO: Optional. Defaults to the appropriate path based on `AUTH_TYPE` (i.e, `auth/approle` for AppRole authentication, `auth/github` for Github, `auth/kubernetes` for Kubernetes) |
+| AVP_K8S_MOUNT_PATH         | Kuberentes Auth Mount PATH                          | Optional for `AUTH_TYPE` of `k8s` defaults to `auth/kubernetes`. Takes precedence over `$AVP_MOUNT_PATH`                                                                           |
+| AVP_K8S_ROLE               | Kuberentes Auth Role                                | if you use `AUTH_TYPE: k8s` -> MANDATORY                                                                                                                                           |
+| AVP_K8S_TOKEN_PATH         | Path to JWT for Kubernetes Auth                     | Optional for `AUTH_TYPE` of `k8s` defaults to `/var/run/secrets/kubernetes.io/serviceaccount/token`                                                                                |
+| AVP_IBM_API_KEY            | IBM Cloud IAM API Key                               | if you use `TYPE` of `ibmsecretsmanager` -> MANDATORY                                                                                                                              |
+| AVP_IBM_INSTANCE_URL       | Endpoint URL for IBM Cloud Secrets Manager instance | If absent, fall back to `$VAULT_ADDR`                                                                                                                                              |
+| AWS_REGION                 | AWS Secrets Manager Region                          | Only valid with `TYPE` `awssecretsmanager`                                                                                                                                         |
+| AVP_YCL_SERVICE_ACCOUNT_ID | Yandex Cloud Lockbox service account ID             | if you use `TYPE: yandexcloudlockbox` -> MANDATORY                                                                                                                                 |
+| AVP_YCL_KEY_ID             | Yandex Cloud Lockbox service account Key ID         | if you use `TYPE: yandexcloudlockbox` -> MANDATORY                                                                                                                                 |
+| AVP_YCL_PRIVATE_KEY        | Yandex Cloud Lockbox service account private key    | if you use `TYPE: yandexcloudlockbox` -> MANDATORY                                                                                                                                 |
+| AVP_PATH_VALIDATION        | Regular Expression to validate the Vault path       | OPTIONAL <br/> Can be used for e.g. to prevent path traversals.                                                                                                                    |
 
 ## Supported Annotation
 

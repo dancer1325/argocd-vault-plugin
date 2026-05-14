@@ -1,45 +1,65 @@
 ### HashiCorp Vault
-We support AppRole, Token, Github, Kubernetes and Userpass Auth Method for getting secrets from Vault.
 
-We currently support retrieving secrets from KV-V1 and KV-V2 backends.
+* ⚠️supported backends⚠️
+  * KV-V1
+    * ❌NOT support❌
+      * versioning
+        * -> retrieve the latest one
+  * KV-V2 
+    * support
+      * versioning
+    * requirements
+      * set path -- as -- `${vault-kvv2-backend-path}/data/{path-to-secret-in-vault}`
+        * `{vault-kvv2-backend-path}`
+          * NORMALLY, `secret`
 
-**Note**: For KV-V2 backends, the path needs to be specified as `${vault-kvv2-backend-path}/data/{path-to-secret}` where `vault-kvv2-backend-path` is the path to the KV-V2 backend (usually just `secret`) and `path-to-secret` is the path to the secret in Vault.
+#### Authentication methods
 
 ##### AppRole Authentication
-For AppRole Authentication, these are the required parameters:
-```
-VAULT_ADDR: Your HashiCorp Vault Address
-AVP_TYPE: vault
-AVP_AUTH_TYPE: approle
-AVP_ROLE_ID: Your AppRole Role ID
-AVP_SECRET_ID: Your AppRole Secret ID
-```
+
+* required parameters
+  ```
+  VAULT_ADDR: Your HashiCorp Vault Address
+  AVP_TYPE: vault
+  AVP_AUTH_TYPE: approle
+  AVP_ROLE_ID: Your AppRole Role ID
+  AVP_SECRET_ID: Your AppRole Secret ID
+  ```
 
 ##### Vault Token Authentication
-For Vault Token Authentication, these are the required parameters:
-```
-VAULT_ADDR: Your HashiCorp Vault Address
-VAULT_TOKEN: Your Vault token
-AVP_TYPE: vault
-AVP_AUTH_TYPE: token
-```
 
-This option may be the easiest to test with locally, depending on your Vault setup.
+* required parameters
+  ```
+  VAULT_ADDR: Your HashiCorp Vault Address
+  VAULT_TOKEN: Your Vault token
+  AVP_TYPE: vault
+  AVP_AUTH_TYPE: token
+  ```
+
+* use case
+  * locally
 
 ##### Github Authentication
-For Github Authentication, these are the required parameters:
-```
-VAULT_ADDR: Your HashiCorp Vault Address
-AVP_TYPE: vault
-AVP_AUTH_TYPE: github
-AVP_GITHUB_TOKEN: Your Github Personal Access Token
-```
+
+* required parameters
+  ```
+  VAULT_ADDR: Your HashiCorp Vault Address
+  AVP_TYPE: vault
+  AVP_AUTH_TYPE: github
+  AVP_GITHUB_TOKEN: Your Github Personal Access Token
+  ```
 
 ##### Kubernetes Authentication
-In order to use Kubernetes Authentication a couple of things are required.
 
-###### 1. Configuring Argo CD
-You can either use your own Service Account or the default Argo CD service account. To use the default Argo CD service account all you need to do is set `automountServiceAccountToken` to true in the `argocd-repo-server`.
+* steps
+  * [configure Argo CD](#1-configure-argo-cd)
+  * [configure Kubernetes](#2-configure-kubernetes)
+
+###### 1. Configure Argo CD
+
+TODO:
+You can either use your own Service Account or the default Argo CD service account
+To use the default Argo CD service account all you need to do is set `automountServiceAccountToken` to true in the `argocd-repo-server`.
 
 ```yaml
 kind: Deployment
@@ -57,7 +77,8 @@ This will put the Service Account token in the default path of `/var/run/secrets
 If you want to use your own Service Account, you would first create the Service Account.
 `kubectl create serviceaccount your-service-account`.
 
-<b>*Note*</b>: The service account that you use must have access to the Kubernetes TokenReview API. You can find the Vault documentation on configuring Kubernetes [here](https://www.vaultproject.io/docs/auth/kubernetes#configuring-kubernetes).
+<b>*Note*</b>: The service account that you use must have access to the Kubernetes TokenReview API
+You can find the Vault documentation on configuring Kubernetes [here](https://www.vaultproject.io/docs/auth/kubernetes#configuring-kubernetes).
 
 And then you will update the `argocd-repo-server` to use that service account.
 
@@ -73,8 +94,11 @@ spec:
       automountServiceAccountToken: true
 ```
 
-###### 2. Configuring Kubernetes
-Use the /config endpoint to configure Vault to talk to Kubernetes. Use `kubectl cluster-info` to validate the Kubernetes host address and TCP port. For the list of available configuration options, please see the [API documentation](https://www.vaultproject.io/api/auth/kubernetes).
+###### 2. Configure Kubernetes
+
+Use the /config endpoint to configure Vault to talk to Kubernetes
+Use `kubectl cluster-info` to validate the Kubernetes host address and TCP port
+For the list of available configuration options, please see the [API documentation](https://www.vaultproject.io/api/auth/kubernetes).
 
 ```
 $ vault write auth/kubernetes/config \
@@ -108,16 +132,18 @@ AVP_K8S_TOKEN_PATH: Path to JWT (optional)
 ```
 
 ##### Userpass Authentication
-For Userpass Authentication, these are the required parameters:
-```
-VAULT_ADDR: Your HashiCorp Vault Address
-AVP_TYPE: vault
-AVP_AUTH_TYPE: userpass
-AVP_USERNAME: Your Username
-AVP_PASSWORD: Your Password
-```
 
-##### ALTERNATIVES
+* required parameters
+
+  ```
+  VAULT_ADDR: Your HashiCorp Vault Address
+  AVP_TYPE: vault
+  AVP_AUTH_TYPE: userpass
+  AVP_USERNAME: Your Username
+  AVP_PASSWORD: Your Password
+  ```
+
+#### ALTERNATIVES
 
 |                                      | AVP                                                  | Vault Agent Injector                                      | Vault Secrets Operator                                                 |
 |--------------------------------------|------------------------------------------------------|-----------------------------------------------------------|------------------------------------------------------------------------|
@@ -132,58 +158,6 @@ AVP_PASSWORD: Your Password
 
 * [Vault agent injector](https://developer.hashicorp.com/vault/docs/deploy/kubernetes/injector)
 * [Vault secrets operator](https://github.com/hashicorp/vault-secrets-operator)
-
-##### Examples
-
-###### Path Annotation
-
-```yaml
-kind: Secret
-apiVersion: v1
-metadata:
-  name: vault-example
-  annotations:
-    avp.kubernetes.io/path: "secret/data/database"
-type: Opaque
-data:
-  username: <username>
-  password: <password>
-```
-
-###### Inline Path
-
-```yaml
-kind: Secret
-apiVersion: v1
-metadata:
-  name: vault-example
-type: Opaque
-data:
-  username: <path:secret/data/database#username>
-  password: <path:secret/data/database#password>
-```
-
-###### Versioned secrets
-
-```yaml
-kind: Secret
-apiVersion: v1
-metadata:
-  name: vault-example
-  annotations:
-    avp.kubernetes.io/path: "secret/data/database"
-    avp.kubernetes.io/secret-version: "2" # 2 is the latest revision in this example
-type: Opaque
-data:
-  username: <username>
-  password: <password>
-  username-current: <path:secret/data/database#username#2> # same as <username>
-  password-current: <path:secret/data/database#password#2> # same as <password>
-  username-old: <path:secret/data/database#username#1>
-  password-old: <path:secret/data/database#password#1>
-```
-
-**Note**: Only Vault KV-V2 backends support versioning. Versions specified with a KV-V1 Vault will be ignored and the latest version will be retrieved.
 
 ### IBM Cloud Secrets Manager
 

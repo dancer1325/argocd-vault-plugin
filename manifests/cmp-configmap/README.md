@@ -1,3 +1,6 @@
+# requirements
+* ⚠️if you want to use your Argo CD CLI -> 's version (MUST be) = [ArgoCD server installation](kustomization.yaml)⚠️
+
 # how to deploy it?
 * requirements
   * [cluster running](https://github.com/dancer1325/argo-cd/blob/master/docs/examples/gettingStarted/README.md)
