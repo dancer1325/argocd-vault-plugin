@@ -26,6 +26,9 @@
   * `kubectl exec -n argocd $(kubectl get pod -l app.kubernetes.io/name=argocd-repo-server -n argocd -o name) -c avp -- argocd-vault-plugin version`
     * check `argocd-vault-plugin` is running | "argocd-repo-server"
 * test with an Application
+  * `kubectl apply -f avp-backend-config.yaml`
+    * creates the Secret | argocd namespace / AVP knows how to connect to Vault
+    * ⚠️adjust `VAULT_TOKEN` & `VAULT_ADDR` to your environment⚠️
   * `kubectl apply -f example-app.yaml -n argocd`
   * check it works
     * `kubectl get application avp-cmp-sidecar-test -n argocd`

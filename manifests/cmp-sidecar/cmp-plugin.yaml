@@ -69,5 +69,7 @@ data:
         command:
           - argocd-vault-plugin
           - generate
+          - "-s"
+          - "avp-backend-config"
           - "."
 ---
