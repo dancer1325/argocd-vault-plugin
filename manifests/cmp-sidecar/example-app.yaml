@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: avp-cmp-sidecar-test
+  namespace: argocd
+spec:
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    # points to a path containing ONLY manifests with AVP placeholders
+    repoURL: 'https://github.com/dancer1325/argocd-vault-plugin'
+    targetRevision: HEAD
+    path: manifests/cmp-sidecar/test-app
+    # plugin: {}
+    #   Argo CD AUTODETECT the plugin -- via -- discover commands | cmp-plugin.yaml
+    plugin: {}
