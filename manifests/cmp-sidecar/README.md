@@ -29,6 +29,7 @@
   * `kubectl apply -f avp-backend-config.yaml`
     * creates the Secret | argocd namespace / AVP knows how to connect to Vault
     * ⚠️adjust `VAULT_TOKEN` & `VAULT_ADDR` to your environment⚠️
+    * ⚠️replace `<your-vault-token>` with your actual token BEFORE applying⚠️
   * `kubectl apply -f example-app.yaml -n argocd`
   * check it works
     * `kubectl get application avp-cmp-sidecar-test -n argocd`
